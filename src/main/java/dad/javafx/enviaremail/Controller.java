@@ -2,12 +2,14 @@ package dad.javafx.enviaremail;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import org.apache.commons.mail.DefaultAuthenticator;
 import org.apache.commons.mail.Email;
 import org.apache.commons.mail.SimpleEmail;
 
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -96,31 +98,43 @@ public class Controller implements Initializable {
 
 	@FXML
 	void onSendAction(ActionEvent event) {
-
-		try {
-			Email email = new SimpleEmail();
-			email.setHostName(model.getServer());
-			email.setSmtpPort(Integer.parseInt(model.getPort()));
-			email.setAuthenticator(new DefaultAuthenticator(model.getEmailFrom(), model.getPassword()));
-			email.setSSLOnConnect(model.isConnection());
-			email.setFrom(model.getEmailFrom());
-			email.setSubject(model.getSubject());
-			email.setMsg(model.getMessage());
-			email.addTo(model.getEmailTo());
-			email.send();
-			AlertEmail.mostrarAlert(AlertType.INFORMATION, "Mensaje enviado con éxito a '" + model.getEmailTo() + "'.",
-					"");
+		
+		Email email = new SimpleEmail();
+		email.setHostName(model.getServer());
+		email.setSmtpPort(Integer.parseInt(model.getPort()));
+		email.setAuthenticator(new DefaultAuthenticator(model.getEmailFrom(), model.getPassword()));
+		email.setSSLOnConnect(model.isConnection());
+		
+		
+		Task<String> enviar = new Task<String>() {
+			@Override
+			protected String call() throws Exception {
+				Thread.sleep(5000L);
+				
+				email.setFrom(model.getEmailFrom());
+				email.setSubject(model.getSubject());
+				email.setMsg(model.getMessage());
+				email.addTo(model.getEmailTo());
+				return email.send();
+								
+			}
+		};
+		
+				
+		enviar.setOnSucceeded(event1 -> {
+			AlertEmail.mostrarAlert(AlertType.INFORMATION, "Mensaje enviado con éxito a '" + model.getEmailTo() + "'.","");
 
 			emailToField.clear();
 			subjectField.clear();
-			messageArea.clear();
-
-		} catch (Exception e) {
-
-			AlertEmail.mostrarAlert(AlertType.ERROR, "No se pudo enviar el email.", e.getMessage());
+			messageArea.clear();;
+		});
+		enviar.setOnFailed(event1 -> {
+			AlertEmail.mostrarAlert(AlertType.ERROR, "No se pudo enviar el email."+ "'.","");
 			
-			e.printStackTrace();
-		}
+		});
+		new Thread(enviar).start();
+		
+		
 
 	}
 	

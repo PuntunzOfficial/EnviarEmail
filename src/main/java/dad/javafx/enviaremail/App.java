@@ -13,7 +13,7 @@ public class App extends Application {
 	public void start(Stage primaryStage) throws IOException {
 		Controller controller = new Controller();
 
-		Scene scene = new Scene(controller.getView(), 660, 400);
+		Scene scene = new Scene(controller.getView(), 800, 400);
 		primaryStage.setTitle("Enviar email");
 		primaryStage.getIcons().add(new Image("email-send-icon-32x32.png"));
 		primaryStage.setScene(scene);
